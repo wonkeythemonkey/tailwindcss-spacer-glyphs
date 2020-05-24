@@ -14486,6 +14486,14 @@ video {
   content: '//';
 }
 
+.spacer-glyph-question:not(.space-x-reverse)>*:not(:first-child)::before {
+  content: '?';
+}
+
+.spacer-glyph-question.space-x-reverse>*:not(:last-child)::before {
+  content: '¿';
+}
+
 @media (min-width: 640px) {
   .sm\:space-y-0 > :not(template) ~ :not(template) {
     --space-y-reverse: 0;

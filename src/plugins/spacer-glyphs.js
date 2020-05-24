@@ -18,29 +18,11 @@ const spacerPrefixes = (customPrefixes = []) => {
 // - object with only invalid keys
 // - not object or string
 
-// TO-DO: Accept glyphs from user theme
-const spacerGlyphs = (customGlyphs = {}) => {
-  const defaultGlyphs = {
-    'angle': {
-      'default': '›',
-      'reverse': '‹',
-    },
-    'angle-double': {
-      'default': '»',
-      'reverse': '«',
-    },
-    'dash': '–',
-    'disc': '•',
-    'pipe': '|',
-    'slash': '/',
-    'slash-double': '//',
-  };
+const processSpacerGlyphs = (glyphList) => {
 
-  let combinedGlyphs = Object.assign({}, customGlyphs, defaultGlyphs)
+  let glyphPairs = Object.entries(glyphList);
 
-  let combinedGlyphsPairs = Object.entries(combinedGlyphs);
-
-  combinedGlyphsPairs = combinedGlyphsPairs.map((value) => {
+  glyphPairs = glyphPairs.map((value) => {
     if (typeof value[1] === 'string') {
       return [
         value[0],
@@ -52,7 +34,7 @@ const spacerGlyphs = (customGlyphs = {}) => {
     }
     return value;
   });
-  return Object.fromEntries(combinedGlyphsPairs);
+  return Object.fromEntries(glyphPairs);
 
 }
 
@@ -67,6 +49,7 @@ module.exports = plugin(function ({
 }) {
   let glyphWidth = theme('spacing')['2'];
   let spacerGlyphClasses = {};
+  let spacerGlyphs = processSpacerGlyphs(theme('spacerGlyphs', {}));
 
   let spacerGlyphDefaultProps = {
     display: 'block',
@@ -79,17 +62,33 @@ module.exports = plugin(function ({
 
   // Generic .spacer-glyph-x with no additional modifiers
   _.forEach(spacerPrefixes(), (prefix) => {
-    spacerGlyphClasses[`.${e(`${prefix}`)}`] = {
-      '&>*::before': spacerGlyphDefaultProps,
 
-      // Default glyph: disc
-      '&:not(.space-x-reverse)>*:not(:first-child)::before': {
-        content: `'${spacerGlyphs()['disc'].default}'`
-      },
-      '&.space-x-reverse>*:not(:last-child)::before': {
-        content: `'${spacerGlyphs()['disc'].default}'`
-      },
+    let spacerGlyphMainClasses = {
+      '&>*::before': spacerGlyphDefaultProps,
     }
+
+    if (theme('spacerGlyphDefault') in spacerGlyphs) {
+      spacerGlyphMainClasses['&:not(.space-x-reverse)>*:not(:first-child)::before'] = {
+        content: `'${spacerGlyphs[theme('spacerGlyphDefault')].default}'`
+      };
+      spacerGlyphMainClasses['&.space-x-reverse>*:not(:last-child)::before'] = {
+        content: `'${spacerGlyphs[theme('spacerGlyphDefault')].default}'`
+      };
+
+    }
+
+    spacerGlyphClasses[`.${e(`${prefix}`)}`] = spacerGlyphMainClasses;
+    // {
+    // '&>*::before': spacerGlyphDefaultProps,
+
+    // Default glyph: disc
+    // '&:not(.space-x-reverse)>*:not(:first-child)::before': {
+    //   content: `'${spacerGlyphs['disc'].default}'`
+    // },
+    // '&.space-x-reverse>*:not(:last-child)::before': {
+    //   content: `'${spacerGlyphs['disc'].default}'`
+    // },
+    // }
 
     // Spacer positioning for specific space widths (e.g. `.space-x-4`)
     _.forEach(theme('spacing'), (spacingAmt, spacingKey) => {
@@ -101,7 +100,7 @@ module.exports = plugin(function ({
     });
 
     // Classes for choosing glyph
-    _.forEach(spacerGlyphs(), (glyph, glyphKey) => {
+    _.forEach(spacerGlyphs, (glyph, glyphKey) => {
       spacerGlyphClasses[`.${e(`${prefix}`)}-${glyphKey}`] = {
         '&:not(.space-x-reverse)>*:not(:first-child)::before': {
           content: `'${glyph.default}'`
@@ -117,7 +116,22 @@ module.exports = plugin(function ({
 
 }, {
   theme: {
-    spacerGlyphs: {},
+    spacerGlyphs: {
+      'angle': {
+        'default': '›',
+        'reverse': '‹',
+      },
+      'angle-double': {
+        'default': '»',
+        'reverse': '«',
+      },
+      'dash': '–',
+      'disc': '•',
+      'pipe': '|',
+      'slash': '/',
+      'slash-double': '//',
+    },
+    spacerGlyphDefault: 'disc'
   },
   variants: {
     spacerGlyphs: ['responsive'],
