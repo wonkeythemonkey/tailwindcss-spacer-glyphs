@@ -49,6 +49,7 @@ module.exports = plugin(function ({
 }) {
   let glyphWidth = theme('spacing')['2'];
   let spacerGlyphClasses = {};
+  let spacerGlyphReverseClasses = {};
   let spacerGlyphs = processSpacerGlyphs(theme('spacerGlyphs', {}));
 
   let spacerGlyphDefaultProps = {
@@ -63,56 +64,48 @@ module.exports = plugin(function ({
   // Generic .spacer-glyph-x with no additional modifiers
   _.forEach(spacerPrefixes(), (prefix) => {
 
-    let spacerGlyphMainClasses = {
-      '&>*::before': spacerGlyphDefaultProps,
-    }
+    spacerGlyphClasses[`.${e(`${prefix}`)}>*::before`] = spacerGlyphDefaultProps;
 
     if (theme('spacerGlyphDefault') in spacerGlyphs) {
-      spacerGlyphMainClasses['&:not(.space-x-reverse)>*:not(:first-child)::before'] = {
-        content: `'${spacerGlyphs[theme('spacerGlyphDefault')].default}'`
-      };
-      spacerGlyphMainClasses['&.space-x-reverse>*:not(:last-child)::before'] = {
+      spacerGlyphClasses[`.${e(`${prefix}`)}>*:not(:first-child)::before`] = {
         content: `'${spacerGlyphs[theme('spacerGlyphDefault')].default}'`
       };
 
+      spacerGlyphReverseClasses[`.${e(`${prefix}`)}.space-x-reverse>*:not(:last-child)::before`] = {
+        content: `'${spacerGlyphs[theme('spacerGlyphDefault')].default}'`
+      };
+
+      spacerGlyphReverseClasses[`.${e(`${prefix}`)}.space-x-reverse>*:last-child::before`] = {
+        content: `none`
+      };
     }
 
-    spacerGlyphClasses[`.${e(`${prefix}`)}`] = spacerGlyphMainClasses;
-    // {
-    // '&>*::before': spacerGlyphDefaultProps,
-
-    // Default glyph: disc
-    // '&:not(.space-x-reverse)>*:not(:first-child)::before': {
-    //   content: `'${spacerGlyphs['disc'].default}'`
-    // },
-    // '&.space-x-reverse>*:not(:last-child)::before': {
-    //   content: `'${spacerGlyphs['disc'].default}'`
-    // },
-    // }
 
     // Spacer positioning for specific space widths (e.g. `.space-x-4`)
     _.forEach(theme('spacing'), (spacingAmt, spacingKey) => {
-      spacerGlyphClasses[`.${e(`${prefix}`)}.space-x-${e(`${spacingKey}`)}`] = {
-        '&>*::before': {
-          marginLeft: `calc(${spacingAmt} / -2 - ${glyphWidth} / 2)`,
-        }
+      spacerGlyphClasses[`.${e(`${prefix}`)}.space-x-${spacingKey}>*::before`] = {
+        marginLeft: `calc(${spacingAmt} / -2 - ${glyphWidth} / 2)`,
       };
     });
 
     // Classes for choosing glyph
     _.forEach(spacerGlyphs, (glyph, glyphKey) => {
-      spacerGlyphClasses[`.${e(`${prefix}`)}-${glyphKey}`] = {
-        '&:not(.space-x-reverse)>*:not(:first-child)::before': {
-          content: `'${glyph.default}'`
-        },
-        '&.space-x-reverse>*:not(:last-child)::before': {
-          content: `'${glyph.reverse}'`
-        },
-      }
+      spacerGlyphClasses[`.${e(`${prefix}`)}-${glyphKey}>*:not(:first-child)::before`] = {
+        content: `'${glyph.default}'`
+      };
+
+      spacerGlyphReverseClasses[`.${e(`${prefix}`)}-${glyphKey}.space-x-reverse>*:not(:last-child)::before`] = {
+        content: `'${glyph.reverse}'`
+      };
+
     });
   });
 
-  addUtilities(spacerGlyphClasses);
+  spacerGlyphClasses = Object.assign(spacerGlyphClasses, spacerGlyphReverseClasses);
+  console.log(spacerGlyphClasses);
+  // console.log(spacerGlyphReverseClasses);
+
+  addUtilities(spacerGlyphClasses, variants('spacerGlyphs'));
 
 }, {
   theme: {
