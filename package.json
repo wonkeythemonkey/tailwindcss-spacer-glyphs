@@ -1,9 +1,9 @@
 {
-  "name": "tailwind-plugin-template",
-  "version": "1.0.0",
+  "name": "tailwind-spacer-glyphs",
+  "version": "1.0.0-alpha",
   "main": "index.js",
   "author": "Jesse A. Janowiak",
-  "license": "none",
+  "license": "MIT",
   "devDependencies": {
     "csscalc": "^0.1.2",
     "lodash": "^4.17.15",
